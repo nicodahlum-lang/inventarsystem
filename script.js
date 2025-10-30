@@ -1,5 +1,5 @@
 // === Einstellungen ===
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbyaFMA2aedJ4k4Pg5JMrHF2PWa6jtTQDOjVNt8tTDQjSB7TwR--uD4_OuVchH8NYMI12g/exec"; 
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzxlzqyv79Kk_FTncbywYBpchKlS6bsjTwGESoQRhAXXzcWWZcBlG1z6sBEAymgg-m5lw/exec"; 
 const EK = 5.6; // Einkaufspreis
 let VK = 15;    // Verkaufspreis
 let daten = [];
@@ -106,4 +106,5 @@ document.getElementById("vkPreis").addEventListener("change", e => {
 });
 
 ladeDaten();
+
 
