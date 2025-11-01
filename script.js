@@ -1,5 +1,5 @@
 // === Einstellungen ===
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbzxlzqyv79Kk_FTncbywYBpchKlS6bsjTwGESoQRhAXXzcWWZcBlG1z6sBEAymgg-m5lw/exec"; 
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbxBXQdYa0D1pmDSa0IQBFZiTINmNb64NlV3IC9UHuCzDpQ7hvN5M3vVJ0jbUQyjLLtiWw/exechttps://script.google.com/macros/s/AKfycbzY1ySdkWGZ0M-0MHC9aDRxcDTxmHq72vNjlGpSr_YpBjBQT0LN8gfttHxz3KTqBlGV/exec"; 
 const EK = 5.6; // Einkaufspreis
 let VK = 15;    // Verkaufspreis
 let daten = [];
@@ -64,7 +64,7 @@ async function lieferung(i) {
 
 // === Tabelle aktualisieren ===
 function aktualisieren() {
-  const tabelle = document.getElementById("inventarTabelle");
+  const tabelle = document.getElementById("Sheet1");
   tabelle.innerHTML = `
     <tr>
       <th>Sorte</th>
