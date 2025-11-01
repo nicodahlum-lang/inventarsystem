@@ -106,5 +106,29 @@ document.getElementById("vkPreis").addEventListener("change", e => {
 });
 
 ladeDaten();
+// === Notizbereich ===
+const notes = document.getElementById('notes');
+const saveBtn = document.getElementById('saveNotes');
+const clearBtn = document.getElementById('clearNotes');
+
+// Beim Laden: gespeicherte Notiz anzeigen
+document.addEventListener('DOMContentLoaded', () => {
+  const savedNote = localStorage.getItem('inventar_notes');
+  if (savedNote) notes.value = savedNote;
+});
+
+// Speichern-Button
+saveBtn.addEventListener('click', () => {
+  localStorage.setItem('inventar_notes', notes.value);
+  alert('📝 Notiz gespeichert!');
+});
+
+// Löschen-Button
+clearBtn.addEventListener('click', () => {
+  if (confirm('Willst du wirklich alle Notizen löschen?')) {
+    localStorage.removeItem('inventar_notes');
+    notes.value = '';
+  }
+});
 
 
