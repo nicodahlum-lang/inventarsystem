@@ -1,257 +1,338 @@
-/* === DARK MODE INVENTAR SYSTEM === */
+* {
+  box-sizing: border-box;
+}
 
 body {
-  background-color: #121212;
-  color: #e0e0e0;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #333;
   margin: 0;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  min-height: 100vh;
 }
 
-/* Titel */
-h1 {
-  color: #00c853;
-  margin-bottom: 25px;
+header {
   text-align: center;
-  letter-spacing: 1px;
+  margin-bottom: 30px;
 }
 
-/* Tabellenlayout */
+h1 {
+  margin: 0;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  font-size: 2.5em;
+}
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.steuerung {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.steuerung-gruppe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.steuerung label {
+  font-weight: 600;
+  color: #555;
+}
+
+input[type=number] {
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+  width: 120px;
+  transition: border-color 0.3s;
+}
+
+input[type=number]:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn-aktualisieren {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 600;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-aktualisieren:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.meldung {
+  display: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.meldung.erfolg {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.meldung.fehler {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.meldung.info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ladeanzeige {
+  display: none;
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.tabelle-container {
+  overflow-x: auto;
+  margin-bottom: 30px;
+}
+
 table {
   border-collapse: collapse;
-  width: 90%;
-  max-width: 1000px;
-  background-color: #1e1e1e;
-  border: 1px solid #2c2c2c;
+  width: 100%;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
 }
 
-/* Tabellenkopf */
-th {
-  background-color: #2c2c2c;
-  color: #00c853;
+th, td {
+  border: 1px solid #e0e0e0;
   padding: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
+  text-align: left;
 }
 
-/* Tabellenzellen */
+th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 td {
-  padding: 10px;
-  border-bottom: 1px solid #333;
   text-align: center;
 }
 
-tr:hover {
-  background-color: #2a2a2a;
+td:first-child {
+  text-align: left;
+  font-weight: 600;
 }
 
-/* Buttons */
-button {
-  background-color: #00c853;
-  color: #000;
-  border: none;
-  border-radius: 5px;
-  padding: 6px 12px;
-  cursor: pointer;
+.bestand-niedrig {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.bestand-warnung {
+  color: #ffc107;
   font-weight: 600;
-  transition: all 0.2s ease;
+}
+
+.input-gruppe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+input[type=number] {
+  width: 80px;
+  padding: 6px 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95em;
+  transition: border-color 0.3s;
+}
+
+input[type=number]:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s;
+  font-size: 0.9em;
 }
 
 button:hover {
-  background-color: #00e676;
+  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
-/* Eingabefelder */
-input[type="number"],
-input[type="text"],
-input[type="file"] {
-  background-color: #2c2c2c;
-  color: #e0e0e0;
-  border: 1px solid #444;
-  border-radius: 5px;
-  padding: 5px 8px;
-  width: 80px;
+button:active {
+  transform: translateY(0);
+}
+
+.gesamt {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.gesamt-item {
   text-align: center;
+  font-size: 1.1em;
 }
 
-input:focus {
-  outline: none;
-  border-color: #00c853;
+.gesamt-item strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+  font-size: 0.9em;
 }
 
-/* Tabelle auf kleineren Geräten */
+.gesamt-item span {
+  display: block;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #667eea;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  color: rgba(255,255,255,0.9);
+  font-size: 0.9em;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   body {
     padding: 10px;
   }
-  table {
+
+  h1 {
+    font-size: 2em;
+  }
+
+  main {
+    padding: 20px;
+  }
+
+  .steuerung {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .steuerung-gruppe {
     width: 100%;
+    justify-content: space-between;
+  }
+
+  table {
     font-size: 0.9em;
   }
-  input, button {
-    width: 100%;
-    margin-bottom: 5px;
+
+  th, td {
+    padding: 8px;
   }
-}
-/* === NOTIZBEREICH === */
 
-#notes-section {
-  margin-top: 30px;
-  width: 90%;
-  max-width: 800px;
-  background-color: #1e1e1e;
-  border: 1px solid #2c2c2c;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
-}
-
-#notes-section h2 {
-  color: #00c853;
-  margin-bottom: 10px;
-  text-align: left;
-}
-
-#notes {
-  width: 100%;
-  height: 150px;
-  background-color: #2c2c2c;
-  color: #e0e0e0;
-  border: 1px solid #444;
-  border-radius: 6px;
-  padding: 10px;
-  resize: vertical;
-  font-size: 1em;
-  line-height: 1.4em;
-}
-
-#notes:focus {
-  outline: none;
-  border-color: #00c853;
-}
-
-.note-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.note-buttons button {
-  background-color: #00c853;
-  color: #000;
-  font-weight: 600;
-  border: none;
-  border-radius: 5px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.note-buttons button:hover {
-  background-color: #00e676;
-}
-/* === LAYOUT: Tabelle + Notizen nebeneinander === */
-
-#main-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 30px;
-  width: 95%;
-  max-width: 1300px;
-  flex-wrap: wrap; /* sorgt dafür, dass auf kleineren Geräten gestapelt wird */
-}
-
-/* Tabelle links */
-#table-container {
-  flex: 2;
-  min-width: 600px;
-}
-
-/* Notizbereich rechts */
-#notes-section {
-  flex: 1;
-  min-width: 300px;
-  background-color: #1e1e1e;
-  border: 1px solid #2c2c2c;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
-  height: fit-content;
-  position: sticky;
-  top: 20px; /* bleibt beim Scrollen sichtbar */
-}
-
-/* Überschrift */
-#notes-section h2 {
-  color: #00c853;
-  margin-bottom: 10px;
-  text-align: left;
-}
-
-/* Textfeld */
-#notes {
-  width: 100%;
-  height: 200px;
-  background-color: #2c2c2c;
-  color: #e0e0e0;
-  border: 1px solid #444;
-  border-radius: 6px;
-  padding: 10px;
-  resize: vertical;
-  font-size: 1em;
-  line-height: 1.4em;
-}
-
-#notes:focus {
-  outline: none;
-  border-color: #00c853;
-}
-
-/* Buttons unter der Notiz */
-.note-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.note-buttons button {
-  background-color: #00c853;
-  color: #000;
-  font-weight: 600;
-  border: none;
-  border-radius: 5px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.note-buttons button:hover {
-  background-color: #00e676;
-}
-
-/* Responsiv für Handy */
-@media (max-width: 900px) {
-  #main-container {
+  .input-gruppe {
     flex-direction: column;
-    align-items: center;
+    gap: 5px;
   }
 
-  #table-container,
-  #notes-section {
+  input[type=number] {
     width: 100%;
-    min-width: unset;
   }
 
-  #notes {
-    height: 150px;
+  button {
+    width: 100%;
+  }
+
+  .gesamt {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  table {
+    font-size: 0.8em;
+  }
+
+  th, td {
+    padding: 6px;
   }
 }

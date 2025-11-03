@@ -1,174 +1,56 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventarsystem</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventarsystem Online</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Inventarsystem</h1>
+  <header>
+    <h1>📦 Inventarsystem</h1>
+  </header>
 
-  <!-- === Dashboard === -->
-  <div id="dashboard">
-    <div class="dash-item">
-      <span class="dash-label">📦 Gesamtbestand:</span>
-      <span id="dash-bestand">0</span>
-    </div>
-    <div class="dash-item">
-      <span class="dash-label">💰 Gesamtumsatz:</span>
-      <span id="dash-umsatz">0 €</span>
-    </div>
-    <div class="dash-item">
-      <span class="dash-label">💵 Gesamtgewinn:</span>
-      <span id="dash-gewinn">0 €</span>
-    </div>
-    <div class="dash-item">
-      <span class="dash-label">🏭 Lagerwert:</span>
-      <span id="dash-lagerwert">0 €</span>
-    </div>
-  </div>
-
-  <!-- === Hauptcontainer: Tabelle + Notizbereich === -->
-  <div id="main-container">
-    <div id="table-container">
-      <table id="inventory-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Bestand</th>
-            <th>Verkäufe</th>
-            <th>Umsatz (€)</th>
-            <th>Gewinn (€)</th>
-            <th>Verkaufspreis (€)</th>
-            <th>Aktionen</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
-
-    <!-- Notizbereich -->
-    <section id="notes-section">
-      <h2>📝 Notizen</h2>
-      <textarea id="notes" placeholder="Schreibe hier deine Notizen..."></textarea>
-      <div class="note-buttons">
-        <button id="saveNotes">💾 Speichern</button>
-        <button id="clearNotes">🗑️ Löschen</button>
+  <main>
+    <div class="steuerung">
+      <div class="steuerung-gruppe">
+        <label for="vkPreis">Verkaufspreis (€):</label>
+        <input type="number" id="vkPreis" value="15" step="0.01" min="0.01" aria-label="Verkaufspreis">
       </div>
-    </section>
-  </div>
+      <button id="aktualisierenBtn" class="btn-aktualisieren" aria-label="Daten aktualisieren">🔄 Aktualisieren</button>
+    </div>
 
-  <script>
-    const SHEET_URL = "https://script.google.com/macros/s/AKfycbzY1ySdkWGZ0M-0MHC9aDRxcDTxmHq72vNjlGpSr_YpBjBQT0LN8gfttHxz3KTqBlGV/exec";
+    <div id="meldung" class="meldung" role="alert" aria-live="polite"></div>
+    
+    <div id="ladeanzeige" class="ladeanzeige" aria-hidden="true">
+      <div class="spinner"></div>
+      <p>Lade Daten...</p>
+    </div>
 
-    async function loadData() {
-      const res = await fetch(SHEET_URL);
-      const data = await res.json();
-      const tableBody = document.getElementById("table-body");
-      tableBody.innerHTML = "";
+    <div class="tabelle-container">
+      <table id="inventarTabelle" role="table" aria-label="Inventarübersicht"></table>
+    </div>
 
-      data.forEach((d, i) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${i+1}</td>
-          <td>${d.Name}</td>
-          <td><input type="number" value="${d.Bestand}" min="0" id="bestand-${i}"></td>
-          <td><input type="number" value="0" min="0" id="verkauf-${i}"></td>
-          <td>${d.Umsatz}</td>
-          <td>${d.Gewinn}</td>
-          <td><input type="number" value="${d.Verkaufspreis}" min="0" id="preis-${i}"></td>
-          <td><button onclick="updateData(${i})">💰 Verkauf</button></td>
-        `;
-        tableBody.appendChild(row);
-      });
+    <div class="gesamt">
+      <div class="gesamt-item">
+        <strong>Gesamtbestand:</strong>
+        <span id="gesamtBestand">0</span>
+      </div>
+      <div class="gesamt-item">
+        <strong>Gesamtumsatz:</strong>
+        <span id="gesamtUmsatz">0.00</span> €
+      </div>
+      <div class="gesamt-item">
+        <strong>Gesamtgewinn:</strong>
+        <span id="gesamtGewinn">0.00</span> €
+      </div>
+    </div>
+  </main>
 
-      updateDashboard(data);
-    }
+  <footer>
+    <p>💻 Inventarsystem by <b>Whity</b></p>
+  </footer>
 
-    function updateDashboard(data) {
-      let gesamtBestand = 0, gesamtUmsatz = 0, gesamtGewinn = 0, lagerwert = 0;
-      data.forEach(d => {
-        const bestand = parseInt(d.Bestand)||0;
-        const umsatz = parseFloat(d.Umsatz)||0;
-        const gewinn = parseFloat(d.Gewinn)||0;
-        gesamtBestand += bestand;
-        gesamtUmsatz += umsatz;
-        gesamtGewinn += gewinn;
-        lagerwert += bestand * 5.6;
-      });
-      document.getElementById("dash-bestand").textContent = gesamtBestand;
-      document.getElementById("dash-umsatz").textContent = gesamtUmsatz.toFixed(2) + " €";
-      document.getElementById("dash-gewinn").textContent = gesamtGewinn.toFixed(2) + " €";
-      document.getElementById("dash-lagerwert").textContent = lagerwert.toFixed(2) + " €";
-    }
-
-    async function updateData(i) {
-      const bestandInput = document.getElementById(`bestand-${i}`);
-      const verkaufInput = document.getElementById(`verkauf-${i}`);
-      const preisInput = document.getElementById(`preis-${i}`);
-
-      const bestand = parseInt(bestandInput.value);
-      const verkauf = parseInt(verkaufInput.value);
-      const preis = parseFloat(preisInput.value);
-
-      if (verkauf > bestand) { alert("Nicht genug Bestand!"); return; }
-
-      const neuerBestand = bestand - verkauf;
-      const umsatz = verkauf * preis;
-      const gewinn = verkauf * (preis - 5.6);
-
-      await fetch(SHEET_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: i,
-          bestand: neuerBestand,
-          umsatz,
-          gewinn,
-          verkaufspreis: preis
-        })
-      });
-
-      loadData();
-    }
-
-    // Notizen
-    const notes = document.getElementById("notes");
-    const saveBtn = document.getElementById("saveNotes");
-    const clearBtn = document.getElementById("clearNotes");
-
-    async function loadNotes() {
-      const res = await fetch(`${SHEET_URL}?action=getNotes`);
-      const data = await res.json();
-      if (data.length > 0) notes.value = data[data.length-1].text || "";
-    }
-
-    saveBtn.addEventListener("click", async () => {
-      const text = notes.value.trim();
-      if (!text) return alert("Bitte eine Notiz eingeben!");
-      await fetch(`${SHEET_URL}?action=saveNote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-      });
-      loadNotes();
-    });
-
-    clearBtn.addEventListener("click", async () => {
-      if (confirm("Willst du wirklich alle Notizen löschen?")) {
-        notes.value = "";
-        await fetch(`${SHEET_URL}?action=saveNote`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: "" })
-        });
-      }
-    });
-
-    loadData();
-    loadNotes();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>

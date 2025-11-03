@@ -1,70 +1,165 @@
 // === Einstellungen ===
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxBXQdYa0D1pmDSa0IQBFZiTINmNb64NlV3IC9UHuCzDpQ7hvN5M3vVJ0jbUQyjLLtiWw/exechttps://script.google.com/macros/s/AKfycbzY1ySdkWGZ0M-0MHC9aDRxcDTxmHq72vNjlGpSr_YpBjBQT0LN8gfttHxz3KTqBlGV/exec"; 
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzyzyfJtjv3tQcyq2iIvxjp-PrktRYm_PXxPj6B7kHCWlfmbZYLDekadwRRJ1qqrqp_pg/exec"; 
 const EK = 5.6; // Einkaufspreis
 let VK = 15;    // Verkaufspreis
 let daten = [];
 
+// === Hilfsfunktionen ===
+function zeigeMeldung(nachricht, typ = "info") {
+  const meldung = document.getElementById("meldung");
+  if (!meldung) return;
+  
+  meldung.textContent = nachricht;
+  meldung.className = `meldung ${typ}`;
+  meldung.style.display = "block";
+  
+  setTimeout(() => {
+    meldung.style.display = "none";
+  }, 3000);
+}
+
+function setzeLadezustand(aktiv) {
+  const ladeanzeige = document.getElementById("ladeanzeige");
+  const tabelle = document.getElementById("inventarTabelle");
+  
+  if (ladeanzeige) {
+    ladeanzeige.style.display = aktiv ? "block" : "none";
+  }
+  if (tabelle) {
+    tabelle.style.opacity = aktiv ? "0.5" : "1";
+  }
+}
+
 // === Daten laden ===
 async function ladeDaten() {
-  const res = await fetch(SHEET_URL);
-  daten = await res.json();
-  aktualisieren();
+  setzeLadezustand(true);
+  try {
+    const res = await fetch(SHEET_URL);
+    if (!res.ok) {
+      throw new Error(`HTTP-Fehler: ${res.status}`);
+    }
+    daten = await res.json();
+    aktualisieren();
+    zeigeMeldung("Daten erfolgreich geladen", "erfolg");
+  } catch (fehler) {
+    console.error("Fehler beim Laden:", fehler);
+    zeigeMeldung(`Fehler beim Laden: ${fehler.message}`, "fehler");
+  } finally {
+    setzeLadezustand(false);
+  }
 }
 
 // === Verkauf ===
 async function verkauf(i) {
   const feld = document.getElementById("v_" + i);
   const menge = parseInt(feld.value);
-  if (!menge || menge <= 0) return;
+  
+  if (!menge || menge <= 0) {
+    zeigeMeldung("Bitte geben Sie eine gültige Menge ein", "fehler");
+    return;
+  }
+  
   const d = daten[i];
+  
+  // Prüfe, ob genug Bestand vorhanden ist
+  if (d.Bestand < menge) {
+    zeigeMeldung(`Nicht genug Bestand! Verfügbar: ${d.Bestand}`, "fehler");
+    feld.focus();
+    return;
+  }
 
+  const alterBestand = d.Bestand;
   d.Bestand -= menge;
   d.Verkäufe += menge;
   d.Umsatz += menge * VK;
   d.Gewinn += menge * (VK - EK);
 
-  await fetch(SHEET_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      id: d.ID,
-      bestand: d.Bestand,
-      verkaeufe: d.Verkäufe,
-      umsatz: d.Umsatz,
-      gewinn: d.Gewinn
-    })
-  });
+  setzeLadezustand(true);
+  try {
+    const res = await fetch(SHEET_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: d.ID,
+        bestand: d.Bestand,
+        verkaeufe: d.Verkäufe,
+        umsatz: d.Umsatz,
+        gewinn: d.Gewinn
+      })
+    });
 
-  feld.value = "";
-  ladeDaten();
+    if (!res.ok) {
+      throw new Error(`HTTP-Fehler: ${res.status}`);
+    }
+
+    zeigeMeldung(`${menge}x ${d.Name} verkauft`, "erfolg");
+    feld.value = "";
+    await ladeDaten();
+  } catch (fehler) {
+    // Rollback bei Fehler
+    d.Bestand = alterBestand;
+    d.Verkäufe -= menge;
+    d.Umsatz -= menge * VK;
+    d.Gewinn -= menge * (VK - EK);
+    
+    console.error("Fehler beim Verkauf:", fehler);
+    zeigeMeldung(`Fehler beim Verkauf: ${fehler.message}`, "fehler");
+    setzeLadezustand(false);
+  }
 }
 
 // === Lieferung ===
 async function lieferung(i) {
   const feld = document.getElementById("l_" + i);
   const menge = parseInt(feld.value);
-  if (!menge || menge <= 0) return;
+  
+  if (!menge || menge <= 0) {
+    zeigeMeldung("Bitte geben Sie eine gültige Menge ein", "fehler");
+    return;
+  }
+  
   const d = daten[i];
-
+  const alterBestand = d.Bestand;
   d.Bestand += menge;
 
-  await fetch(SHEET_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      id: d.ID,
-      bestand: d.Bestand,
-      verkaeufe: d.Verkäufe,
-      umsatz: d.Umsatz,
-      gewinn: d.Gewinn
-    })
-  });
+  setzeLadezustand(true);
+  try {
+    const res = await fetch(SHEET_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: d.ID,
+        bestand: d.Bestand,
+        verkaeufe: d.Verkäufe,
+        umsatz: d.Umsatz,
+        gewinn: d.Gewinn
+      })
+    });
 
-  feld.value = "";
-  ladeDaten();
+    if (!res.ok) {
+      throw new Error(`HTTP-Fehler: ${res.status}`);
+    }
+
+    zeigeMeldung(`${menge}x ${d.Name} geliefert`, "erfolg");
+    feld.value = "";
+    await ladeDaten();
+  } catch (fehler) {
+    // Rollback bei Fehler
+    d.Bestand = alterBestand;
+    
+    console.error("Fehler bei Lieferung:", fehler);
+    zeigeMeldung(`Fehler bei Lieferung: ${fehler.message}`, "fehler");
+    setzeLadezustand(false);
+  }
 }
 
 // === Tabelle aktualisieren ===
 function aktualisieren() {
-  const tabelle = document.getElementById("Sheet1");
+  const tabelle = document.getElementById("inventarTabelle");
   tabelle.innerHTML = `
     <tr>
       <th>Sorte</th>
@@ -83,12 +178,29 @@ function aktualisieren() {
     gesamtU += d.Umsatz;
     gesamtG += d.Gewinn;
 
+    const bestandClass = d.Bestand === 0 ? "bestand-niedrig" : d.Bestand < 10 ? "bestand-warnung" : "";
+    
     tabelle.innerHTML += `
       <tr>
         <td>${d.Name}</td>
-        <td>${d.Bestand}</td>
-        <td><input type="number" id="v_${i}" min="1" placeholder="0"><button onclick="verkauf(${i})">OK</button></td>
-        <td><input type="number" id="l_${i}" min="1" placeholder="0"><button onclick="lieferung(${i})">OK</button></td>
+        <td class="${bestandClass}">${d.Bestand}</td>
+        <td>
+          <div class="input-gruppe">
+            <input type="number" id="v_${i}" min="1" placeholder="0" 
+                   aria-label="Verkaufsmenge für ${d.Name}"
+                   max="${d.Bestand}"
+                   onkeypress="if(event.key==='Enter') verkauf(${i})">
+            <button onclick="verkauf(${i})" aria-label="Verkauf bestätigen">OK</button>
+          </div>
+        </td>
+        <td>
+          <div class="input-gruppe">
+            <input type="number" id="l_${i}" min="1" placeholder="0" 
+                   aria-label="Liefermenge für ${d.Name}"
+                   onkeypress="if(event.key==='Enter') lieferung(${i})">
+            <button onclick="lieferung(${i})" aria-label="Lieferung bestätigen">OK</button>
+          </div>
+        </td>
         <td>${d.Verkäufe}</td>
         <td>${d.Umsatz.toFixed(2)}</td>
         <td>${d.Gewinn.toFixed(2)}</td>
@@ -101,34 +213,27 @@ function aktualisieren() {
 }
 
 // === Verkaufspreis ändern ===
-document.getElementById("vkPreis").addEventListener("change", e => {
-  VK = parseFloat(e.target.value);
-});
-
-ladeDaten();
-// === Notizbereich ===
-const notes = document.getElementById('notes');
-const saveBtn = document.getElementById('saveNotes');
-const clearBtn = document.getElementById('clearNotes');
-
-// Beim Laden: gespeicherte Notiz anzeigen
-document.addEventListener('DOMContentLoaded', () => {
-  const savedNote = localStorage.getItem('inventar_notes');
-  if (savedNote) notes.value = savedNote;
-});
-
-// Speichern-Button
-saveBtn.addEventListener('click', () => {
-  localStorage.setItem('inventar_notes', notes.value);
-  alert('📝 Notiz gespeichert!');
-});
-
-// Löschen-Button
-clearBtn.addEventListener('click', () => {
-  if (confirm('Willst du wirklich alle Notizen löschen?')) {
-    localStorage.removeItem('inventar_notes');
-    notes.value = '';
+document.addEventListener("DOMContentLoaded", () => {
+  const vkPreisInput = document.getElementById("vkPreis");
+  if (vkPreisInput) {
+    vkPreisInput.addEventListener("change", e => {
+      const neuerPreis = parseFloat(e.target.value);
+      if (neuerPreis > 0) {
+        VK = neuerPreis;
+        zeigeMeldung(`Verkaufspreis auf ${VK.toFixed(2)} € gesetzt`, "erfolg");
+      } else {
+        zeigeMeldung("Ungültiger Preis", "fehler");
+        e.target.value = VK;
+      }
+    });
   }
+
+  // Aktualisieren-Button
+  const aktualisierenBtn = document.getElementById("aktualisierenBtn");
+  if (aktualisierenBtn) {
+    aktualisierenBtn.addEventListener("click", ladeDaten);
+  }
+
+  // Initiales Laden
+  ladeDaten();
 });
-
-
