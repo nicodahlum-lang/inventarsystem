@@ -1,5 +1,5 @@
 // === Einstellungen ===
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbzyzyfJtjv3tQcyq2iIvxjp-PrktRYm_PXxPj6B7kHCWlfmbZYLDekadwRRJ1qqrqp_pg/exec"; 
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbyaFMA2aedJ4k4Pg5JMrHF2PWa6jtTQDOjVNt8tTDQjSB7TwR--uD4_OuVchH8NYMI12g/exec"; 
 const EK = 5.6; // Einkaufspreis
 let VK = 15;    // Verkaufspreis
 let daten = [];
